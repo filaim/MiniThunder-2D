@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniThunder 2D</title>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <div class="hud" id="hudContainer" style="display: none;">
+        <div>❤️ <span id="healthDisplay">100</span></div>
+        <div>💀 <span id="killsDisplay">0</span></div>
+        <div>⭐ <span id="scoreDisplay">0</span></div>
+        <div id="timerContainer" style="display: none;">⏱️ <span id="timerDisplay" class="timer-display">60</span>с</div>
+        <div id="levelDisplay" style="display: none;">🏁 Уровень <span id="levelNumber">1</span></div>
+        <div id="railgunMode" style="display: none; color: #f39c12;">⚡ Режим: <span id="railgunModeText">Электро</span></div>
+    </div>
+    <div id="bossHpContainer" class="boss-hp-container">
+        <div class="boss-hp-label" id="bossNameLabel">🔥 БОСС</div>
+        <div class="boss-hp-bar"><div id="bossHpFill" class="boss-hp-fill" style="width: 100%;"></div></div>
+    </div>
+    <div class="sandbox-panel" id="sandboxPanel">
+        <strong>MiniAtlas 1.0.1a</strong>
+        <select id="sandboxUnitType">
+            <option value="enemy">Враг</option>
+            <option value="boss">Босс (Шторм)</option>
+            <option value="railgun">Босс (Изида)</option>
+            <option value="tree">Дерево</option>
+            <option value="crater">Кратер</option>
+        </select>
+        <label><input type="checkbox" id="sandboxControlBossCheck"> Управлять боссом</label>
+        <button id="sandboxClearBtn">Очистить всё</button>
+        <p style="font-size:0.7rem; color:#aaa;">Shift+клик — удалить</p>
+    </div>
+
+    <!-- Главное меню -->
+    <div class="modal active" id="mainMenuModal">
+        <div class="modal-content">
+            <h2>💎 MiniThunder 2D</h2>
+            <button class="btn btn-mode btn-campaign" id="campaignBtn">🏆 Кампания</button>
+            <button class="btn btn-mode btn-storm" id="stormBtn">⚡ Шторм</button>
+            <button class="btn btn-mode btn-trials" id="trialsBtn">🛡️ Испытания</button>
+            <button class="btn btn-mode" id="settingsBtn">⚙️ Настройки</button>
+            <button class="btn btn-mode" id="savesMenuBtn">💾 Сохранения</button>
+        </div>
+    </div>
+    <!-- Меню испытаний -->
+    <div class="modal" id="trialsMenuModal">
+        <div class="modal-content">
+            <h2>Испытания</h2>
+            <button class="btn btn-mode" id="endlessBtn">♾️ Бесконечный счёт</button>
+            <button class="btn btn-mode" id="timedBtn">⏱️ На время</button>
+            <button class="btn btn-mode" id="sandboxBtn">🛠️ Песочница (MiniAtlas 1.0.1a)</button>
+            <button class="btn btn-back" id="backToMainBtn">← Назад</button>
+        </div>
+    </div>
+    <!-- Настройки -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <h2>⚙️ Настройки</h2>
+            <div class="form-group"><label>Громкость: <span id="volumeValue">50</span>%</label><input type="range" id="volumeSlider" min="0" max="100" value="50" step="1"></div>
+            <div class="form-group"><label>Разрешение экрана</label><select id="resolutionSelect"><option value="default">По умолчанию</option><option value="1080">1920x1080</option><option value="720">1280x720</option><option value="480">854x480</option></select></div>
+            <div class="form-group"><label>Сложность</label><div class="radio-group"><label><input type="radio" name="difficulty" value="easy" checked> Лёгкий</label><label><input type="radio" name="difficulty" value="normal"> Нормальный</label><label><input type="radio" name="difficulty" value="hard"> Трудный</label></div></div>
+            <button class="btn btn-back" id="closeSettingsBtn">← Назад</button>
+        </div>
+    </div>
+    <!-- Улучшения -->
+    <div class="modal" id="upgradesModal">
+        <div class="modal-content">
+            <h2>Улучшения</h2>
+            <div class="form-group"><label>Здоровье</label><div class="radio-group"><label class="upgrade-option"><input type="radio" name="healthLevel" value="1" checked> 100 HP</label><label class="upgrade-option"><input type="radio" name="healthLevel" value="2"> 200 HP</label><label class="upgrade-option"><input type="radio" name="healthLevel" value="3"> 300 HP</label></div></div>
+            <div class="form-group"><label>Оружие</label><div id="weaponSelection"></div></div>
+            <button class="btn btn-mode" id="startCampaignWithUpgradesBtn">Далее</button>
+            <button class="btn btn-back" id="backFromUpgradesBtn">← Назад</button>
+        </div>
+    </div>
+    <!-- Выбор уровня -->
+    <div class="modal" id="levelSelectModal">
+        <div class="modal-content"><h2>Выберите уровень</h2><div class="level-grid" id="levelGrid"></div><button class="btn btn-back" id="backFromLevelSelectBtn">← Назад</button></div>
+    </div>
+    <!-- Сохранения -->
+    <div class="modal" id="savesModal">
+        <div class="modal-content">
+            <h2>💾 Сохранения</h2>
+            <div id="savesList"></div>
+            <button class="btn btn-close" id="closeSavesBtn" style="margin-top:20px;">Закрыть</button>
+        </div>
+    </div>
+    <!-- Пауза -->
+    <div class="modal" id="pauseModal">
+        <div class="modal-content"><h2>⏸️ Пауза</h2><div class="form-group" style="text-align:center"><label>Управление</label><div class="radio-group"><label><input type="radio" name="controlScheme" value="wasd" checked> WASD</label><label><input type="radio" name="controlScheme" value="arrows"> Стрелки</label></div></div><div class="btn-row"><button class="btn btn-resume" id="resumeBtn">▶ Продолжить</button></div><button class="btn btn-exit" id="exitToMenuBtn" style="margin-top:25px;">🚪 Выйти</button></div>
+    </div>
+    <!-- Победа -->
+    <div class="modal" id="victoryModal">
+        <div class="modal-content"><h2>🎉 Победа!</h2><p id="victoryMessage" style="margin-bottom:25px;"></p><button class="btn btn-close" id="victoryOkBtn">В меню</button></div>
+    </div>
+
+    <!-- Кооперативное лобби -->
+    <div class="modal" id="coopLobbyModal">
+        <div class="modal-content" style="width:600px">
+            <h2>🎮 Кооператив (лобби)</h2>
+            <div id="lobbySlots"></div>
+            <div style="margin:15px 0">
+                <input type="text" id="ipInput" class="ip-input" placeholder="IP:Port (например, 192.168.1.5:8080)">
+                <button id="connectByIpBtn" class="btn-connect">Подключиться</button>
+            </div>
+            <div style="margin-top:15px">
+                <button class="btn btn-mode" id="startCoopBtn">Начать (один игрок)</button>
+                <button class="btn btn-back" id="closeCoopLobbyBtn">← Назад</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Подменю кампании -->
+    <div class="modal" id="campaignSubMenu">
+        <div class="modal-content">
+            <h2>🏆 Кампания</h2>
+            <button class="btn btn-mode" id="singleCampaignBtn">Одиночная</button>
+            <button class="btn btn-mode" id="coopCampaignBtn">Кооператив</button>
+            <button class="btn btn-back" id="backFromCampaignSubBtn">← Назад</button>
+        </div>
+    </div>
+
+    <div class="changelog" id="changelogBlock">
+        <h3>🛠️ MiniThunder 1.2.9.3</h3>
+        <ul>
+        <b>БАГФИКСЫ:</b>
+            <li>🔥 Горение врагов за зоной в «Шторме» и от рельсотрона</li>
+            <li>🐛 Исправлен уход HP в минус</li>
+        <b>ИЗМЕНЕНИЯ:</b>
+            <li>📒 Удалено окно "Друзья"</li>
+            <li>🎮 Изменён профиль на "Сохранения"</li>
+            <li>❤️ Сердечки восстановления в трёх режимах</li>
+            <li>🛠️ Исправлено зависание в песочнице</li>
+        </ul>
+        <a href="https://github.com/filaim" target="_blank" class="credits-link">
+            <div class="credits">
+                Игра создана автором — <span class="author-name">clevtalik</span>
+            </div>
+        </a>
+    </div>
+
+    <canvas id="gameCanvas" tabindex="0"></canvas>
+    <script src="script.js"></script>
+</body>
+</html>
