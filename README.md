@@ -2,6 +2,8 @@
 
 2D-игра про танки, написанная на JavaScript (html + css).
 
+<img width="1721" height="986" alt="изображение" src="https://github.com/user-attachments/assets/357b3bb1-17ba-4ff8-826c-3b535ab8b1af" />
+
 ## Особенности
 - Кампания из 10 уровней
 - Режим «Шторм» с сужающейся зоной
